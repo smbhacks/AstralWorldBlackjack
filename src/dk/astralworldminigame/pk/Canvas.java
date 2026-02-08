@@ -127,7 +127,11 @@ public class Canvas extends GameCanvas implements Runnable {
 	}
 	
 	private void drawBg(Graphics g) {
-		int x = gameTickCounter % 16;
+		int x = 0;
+		if(world < 3)
+			x = gameTickCounter % 16;
+		else
+			x = (gameTickCounter % 8)*2;
 		g.drawRegion(bgImage, x, 0, 176, 220, 0, 0, 0, 0);
 	}
 	
@@ -278,7 +282,6 @@ public class Canvas extends GameCanvas implements Runnable {
 						statusMessage = "Dealer busted!";
 						stateTimer = 20;
 						state = YOU_WIN_STATE;
-						midlet.display.vibrate(250);
 					}
 					else {
 						stateTimer = 30;
