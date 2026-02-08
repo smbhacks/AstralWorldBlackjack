@@ -40,7 +40,7 @@ public class Main extends MIDlet {
 		g.setColor(0x000000);
 		g.fillRect(0, 0, Main.jarWidth, Main.jarHeight);
 		g.setColor(0xFFFFFF);
-		g.drawRect(0, 0, Main.jarWidth, Main.jarHeight);
+		g.drawRect(-1, -1, Main.jarWidth+1, Main.jarHeight+1);
 	}	
 	
 	public void stopMidi() {

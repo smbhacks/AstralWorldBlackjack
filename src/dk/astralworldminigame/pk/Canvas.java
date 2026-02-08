@@ -18,6 +18,7 @@ public class Canvas extends GameCanvas implements Runnable {
 		buttonImage = null;
 		coinCounterImage = null;
 		statusImage = null;
+		bgImage = null;
 		System.gc();
 	}
 	
@@ -46,6 +47,7 @@ public class Canvas extends GameCanvas implements Runnable {
 			buttonImage = Image.createImage("/buttons.png");
 			coinCounterImage = Image.createImage("/coincounter.png");
 			statusImage = Image.createImage("/status.png");
+			bgImage = Image.createImage("/bg.png");
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
@@ -95,20 +97,20 @@ public class Canvas extends GameCanvas implements Runnable {
 		}
 	}
 	
-	private void drawStatus(Graphics g) {
+	private void drawStage(Graphics g) {
 		int x, y = 0;
-		if(statusMessage == 0) {
-			x = (world-1)*24;
-			y = (level-1)*8;
-		} else {
-			x = 96;
-			y = (statusMessage-1)*8;
-		}
-		g.drawRegion(statusImage, x, y, 24, 8, 0, Main.jarWidth / 2 - 24/2, Main.jarHeight-12, 0);
+		x = (world-1)*48;
+		y = (level-1)*16;
+		g.drawRegion(statusImage, x, y, 48, 16, 0, Main.jarWidth - 48 - 4, 4, 0);
+	}
+	
+	private void drawBg(Graphics g) {
+		int x = gameTickCounter % 16;
+		g.drawRegion(bgImage, x, 0, 176, 220, 0, 0, 0, 0);
 	}
 	
 	private void updateScreen(Graphics g) {
-		midlet.createBackground(g);
+		drawBg(g);
 		drawCards(g, playerHand, Main.jarHeight - 70 - 16);
 		drawCards(g, dealerHand, 16);
 		if(drawPlayerButtons) {
@@ -117,7 +119,9 @@ public class Canvas extends GameCanvas implements Runnable {
 			drawPlayerButtons = false;
 		}
 		drawCoinCounter(g);
-		drawStatus(g);
+		drawStage(g);
+		g.setColor(0xFFFFFF);
+		g.drawString(statusMessage, Main.jarWidth / 2, Main.jarHeight - 16, Graphics.HCENTER | Graphics.TOP);
 		flushGraphics();
 	}
 
@@ -171,7 +175,7 @@ public class Canvas extends GameCanvas implements Runnable {
 		}
 		switch(state) {
 		case INIT_STATE:
-			statusMessage = 0;
+			statusMessage = "";
 			dealerCardRevealState = 0;
 			playerHand.removeAllElements();
 			dealerHand.removeAllElements();
@@ -198,7 +202,7 @@ public class Canvas extends GameCanvas implements Runnable {
 			drawPlayerButtons = true;
 			if(Key.states[Key.SOFT_LEFT_KEY].pressed) {
 				playerHand.addElement(getRandomCardFromDeck());
-				stateTimer = 30;
+				stateTimer = 15;
 				drawPlayerButtons = false;
 				int playerValue = countCards(playerHand);
 				if(playerValue == 21) {
@@ -206,6 +210,7 @@ public class Canvas extends GameCanvas implements Runnable {
 				}
 				else if(playerValue > 21) {
 					state = PLAYER_BUST_STATE;
+					stateTimer = 0;
 				}
 			}
 			else if(Key.states[Key.SOFT_RIGHT_KEY].pressed) {
@@ -234,7 +239,7 @@ public class Canvas extends GameCanvas implements Runnable {
 				if(dealerValue < 17) {
 					dealerHand.addElement(getRandomCardFromDeck());
 					if(countCards(dealerHand) > 21) {
-						statusMessage = 1;
+						statusMessage = "Dealer busted!";
 						stateTimer = 20;
 						state = YOU_WIN_STATE;
 					}
@@ -255,7 +260,7 @@ public class Canvas extends GameCanvas implements Runnable {
 						} else {
 							//tie
 							coinToAdd = bet;
-							statusMessage = 4;
+							statusMessage = "Tie!";
 							stateTimer = 40;
 							state = INC_LEVEL_STATE;
 						}
@@ -265,17 +270,17 @@ public class Canvas extends GameCanvas implements Runnable {
 			}
 			break;
 		case PLAYER_BUST_STATE:
-			statusMessage = 1;
+			statusMessage = "You busted!";
 			stateTimer = 20;
 			state = YOU_LOSE_STATE;
 			break;
 		case YOU_LOSE_STATE:
-			statusMessage = 3;
+			statusMessage = "You lose..";
 			stateTimer = 40;
 			state = INC_LEVEL_STATE;
 			break;
 		case YOU_WIN_STATE:
-			statusMessage = 2;
+			statusMessage = "You win!!";
 			stateTimer = 40;
 			state = INC_LEVEL_STATE;
 			if(playerHand.size() == 2) {
@@ -319,6 +324,7 @@ public class Canvas extends GameCanvas implements Runnable {
 	//1: reveal card
 	//2: count card, do other stuff, etc.
 	private int dealerCardRevealState;
+	private Image bgImage;
 	private Image buttonImage;
 	private Image coinCounterImage;
 	private Image statusImage;
@@ -327,7 +333,7 @@ public class Canvas extends GameCanvas implements Runnable {
 	//2: win
 	//3: lose
 	//4: tie
-	private int statusMessage;
+	private String statusMessage = new String();
 	private int coinCounterFrame = 0;
 	private int gameTickCounter = 0;
 	private boolean drawPlayerButtons = false;
