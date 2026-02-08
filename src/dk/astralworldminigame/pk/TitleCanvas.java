@@ -45,7 +45,7 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 		titleTickCounter++;
 		switch(state) {
 		case TITLE_INIT:
-			midlet.playMidi("/profound.mid");
+			midlet.playMidi("/profound.mid", -1);
 			mainMenu.addToMenu("Start a new game", new Menu.Action() {
 				public void execute() {
 					midlet.startGame();
@@ -62,7 +62,7 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 					}
 					else {
 						midlet.musicEnabled = true;
-						midlet.playMidi("/profound.mid");
+						midlet.playMidi("/profound.mid", -1);
 						musicToggleItem.string = "Music: On";
 					}
 				}
@@ -71,7 +71,7 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 			mainMenu.addToMenu("Quit", new Menu.Action() {
 				public void execute() {
 					midlet.destroyApp(true);
-					stopCanvas = false;
+					stopCanvas = true;
 					midlet.notifyDestroyed();
 				}
 			});			

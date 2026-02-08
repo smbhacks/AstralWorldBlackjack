@@ -54,14 +54,14 @@ public class Main extends MIDlet {
 			midiPlayer = null;
 		}		
 	}
-	public void playMidi(String path) {
+	public void playMidi(String path, int loopCounter) {
 		if(!musicEnabled)
 			return;
 		try {
 			stopMidi();
 			InputStream is = getClass().getResourceAsStream(path);
 			midiPlayer = Manager.createPlayer(is, "audio/midi");
-			midiPlayer.setLoopCount(-1);
+			midiPlayer.setLoopCount(loopCounter);
 			midiPlayer.start();
 			is.close();
 			is = null;
@@ -73,7 +73,7 @@ public class Main extends MIDlet {
 	private Player midiPlayer;
 	private TitleCanvas titleCanvas;
 	private Canvas gameCanvas;
-	private Display display;
+	public Display display;
 	public boolean musicEnabled = true;
 	public static final int jarHeight = 220;
 	public static final int jarWidth = 176;

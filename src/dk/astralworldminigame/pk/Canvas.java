@@ -36,6 +36,17 @@ public class Canvas extends GameCanvas implements Runnable {
 		cleanup();
 	}
 
+	public void restartGame() {
+		midlet.playMidi("/underworld.mid", -1);
+		level = 1;
+		world = 1;
+		initialCoinCounter = coinCounter = 50;
+		state = INIT_STATE;
+		endOfGameTextCounter = 0;
+		stateTimer = 30;
+		statusMessage = "Starting money: " + coinCounter;		
+	}
+	
 	public void start() {
 		int i = 0;
 		for(int rank = 2; rank <= 14; rank++) {
@@ -51,10 +62,19 @@ public class Canvas extends GameCanvas implements Runnable {
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
-		midlet.playMidi("/underworld.mid");
-		level = 1;
-		world = 1;
-		coinCounter = 50;
+		endOfGameMenu.addToMenu("Try again", new Menu.Action() {
+			public void execute() {
+				restartGame();
+			}
+		});
+		endOfGameMenu.addToMenu("Quit", new Menu.Action() {
+			public void execute() {
+				midlet.destroyApp(true);
+				stopCanvas = true;
+				midlet.notifyDestroyed();
+			}
+		});
+		restartGame();
 		Thread runner = new Thread(this);
 		runner.start();
 	}
@@ -98,6 +118,8 @@ public class Canvas extends GameCanvas implements Runnable {
 	}
 	
 	private void drawStage(Graphics g) {
+		if(world > 4 || level > 4)
+			return;
 		int x, y = 0;
 		x = (world-1)*48;
 		y = (level-1)*16;
@@ -122,6 +144,7 @@ public class Canvas extends GameCanvas implements Runnable {
 		drawStage(g);
 		g.setColor(0xFFFFFF);
 		g.drawString(statusMessage, Main.jarWidth / 2, Main.jarHeight - 16, Graphics.HCENTER | Graphics.TOP);
+		endOfGameMenu.handleDrawing(g, Main.jarWidth / 2, Main.jarHeight / 2, gameTickCounter);
 		flushGraphics();
 	}
 
@@ -175,7 +198,7 @@ public class Canvas extends GameCanvas implements Runnable {
 		}
 		switch(state) {
 		case INIT_STATE:
-			statusMessage = "";
+			endOfGameTextCounter = 0;
 			dealerCardRevealState = 0;
 			playerHand.removeAllElements();
 			dealerHand.removeAllElements();
@@ -191,6 +214,11 @@ public class Canvas extends GameCanvas implements Runnable {
 			dealerHand.addElement(getRandomCardFromDeck());
 			stateTimer = 30;
 			state = PLAYER_TURN_STATE;
+			if(coinCounter > 5)
+				bet = coinCounter / 2;
+			else
+				bet = coinCounter;
+			statusMessage = "Bet: " + bet;
 			if(bet < coinCounter) {
 				coinToAdd -= bet;
 			}
@@ -207,16 +235,22 @@ public class Canvas extends GameCanvas implements Runnable {
 				int playerValue = countCards(playerHand);
 				if(playerValue == 21) {
 					state = DEALER_TURN_STATE;
+					statusMessage = "Your hand: 21!";
 				}
 				else if(playerValue > 21) {
 					state = PLAYER_BUST_STATE;
 					stateTimer = 0;
+					midlet.display.vibrate(250);
+				}
+				else {
+					statusMessage = "Your hand: " + playerValue;
 				}
 			}
 			else if(Key.states[Key.SOFT_RIGHT_KEY].pressed) {
 				state = DEALER_TURN_STATE;
 				stateTimer = 30;
 				drawPlayerButtons = false;
+				statusMessage = "Standing with " + countCards(playerHand);
 			}
 			break;
 		case DEALER_TURN_STATE:
@@ -233,18 +267,22 @@ public class Canvas extends GameCanvas implements Runnable {
 				revealCard.backShown = false;
 				dealerCardRevealState++;
 				stateTimer = 30;
+				statusMessage = "Dealer: " + countCards(dealerHand);
 				break;
 			case 2:
 				int dealerValue = countCards(dealerHand);
 				if(dealerValue < 17) {
 					dealerHand.addElement(getRandomCardFromDeck());
-					if(countCards(dealerHand) > 21) {
+					dealerValue = countCards(dealerHand);
+					if(dealerValue > 21) {
 						statusMessage = "Dealer busted!";
 						stateTimer = 20;
 						state = YOU_WIN_STATE;
+						midlet.display.vibrate(250);
 					}
 					else {
 						stateTimer = 30;
+						statusMessage = "Dealer: " + dealerValue;
 					}
 				}
 				else {
@@ -295,15 +333,46 @@ public class Canvas extends GameCanvas implements Runnable {
 			state = INIT_STATE;
 			if(coinCounter == 0)
 				state = END_OF_GAME_STATE;
-			if(level++ == 4) {
+			else if(level++ == 4) {
 				level = 1;
 				if(world++ == 4) {
+					world = level = 4;
 					state = END_OF_GAME_STATE;
 				}
-			}			
+			}
+			if(level == 1 && world == 3)
+				midlet.playMidi("/cultureshock.mid", -1);
 			break;
 		case END_OF_GAME_STATE:
-			System.out.println("Game end!");
+			stateTimer = 30;
+			switch(endOfGameTextCounter) {
+			case 0:
+				statusMessage = "Game over!";
+				midlet.stopMidi();
+				endOfGameTextCounter++;
+				break;
+			case 1:
+				if(coinCounter == 0) {
+					statusMessage = "You've lost it all...";
+					midlet.playMidi("/death.mid", 1);
+				}
+				else if(coinCounter <= initialCoinCounter) {
+					statusMessage = "You didn't make any profit.";
+				} else {
+					statusMessage = "Your profit: " + (coinCounter - initialCoinCounter) + "!";
+					midlet.playMidi("/win.mid", 1);
+				}
+				stateTimer = 60;
+				endOfGameTextCounter++;
+				break;
+			case 2:
+				stateTimer = 0;
+				playerHand.removeAllElements();
+				dealerHand.removeAllElements();				
+				endOfGameMenu.drawFlag = true;
+				endOfGameMenu.checkInput();
+				break;
+			}
 			break;
 		}
 	}
@@ -315,9 +384,12 @@ public class Canvas extends GameCanvas implements Runnable {
 		Key.keyReleased(keyCode);
 	}
 	
-	private int bet = 15;
+	private Menu endOfGameMenu = new Menu();
+	private int endOfGameTextCounter;
+	private int bet;
 	private int coinToAdd;
 	private int coinCounter;
+	private int initialCoinCounter;
 	private int level;
 	private int world;
 	//0: move card to the top
