@@ -81,7 +81,7 @@ public class Canvas extends GameCanvas implements Runnable {
 
 	private void drawCards(Graphics g, Vector cards, int y) {
 		for(int i = 0; i < cards.size(); i++) {
-			int x = Main.jarWidth / 2 + i * 12 - (40 + (cards.size()-1) * 12) / 2;
+			int x = Main.screenWidth / 2 + i * 12 - (40 + (cards.size()-1) * 12) / 2;
 			Card card = (Card)cards.elementAt(i);
 			card.draw(g, x, y);
 		}		
@@ -123,32 +123,38 @@ public class Canvas extends GameCanvas implements Runnable {
 		int x, y = 0;
 		x = (world-1)*48;
 		y = (level-1)*16;
-		g.drawRegion(statusImage, x, y, 48, 16, 0, Main.jarWidth - 48 - 4, 4, 0);
+		g.drawRegion(statusImage, x, y, 48, 16, 0, Main.screenWidth - 48 - 4, 4, 0);
 	}
 	
 	private void drawBg(Graphics g) {
-		int x = 0;
-		if(world < 3)
-			x = gameTickCounter % 16;
-		else
-			x = (gameTickCounter % 8)*2;
-		g.drawRegion(bgImage, x, 0, 176, 220, 0, 0, 0, 0);
+		int whereY = 0; 
+		do {
+			int whereX = 0;
+			int x = 0;
+			if(world < 3)
+				x = gameTickCounter % 16;
+			else
+				x = (gameTickCounter % 8)*2;
+			do {
+				g.drawRegion(bgImage, x, 0, 176, 224, 0, whereX, whereY, 0);
+			} while((whereX += 176) < Main.screenWidth);
+		} while((whereY += 224) < Main.screenHeight);
 	}
 	
 	private void updateScreen(Graphics g) {
 		drawBg(g);
-		drawCards(g, playerHand, Main.jarHeight - 70 - 16);
+		drawCards(g, playerHand, Main.screenHeight - 70 - 16);
 		drawCards(g, dealerHand, 16);
 		if(drawPlayerButtons) {
-			g.drawRegion(buttonImage, 0, 0, 31, 16, 0, 0, Main.jarHeight-16, 0); //hit
-			g.drawRegion(buttonImage, 31, 0, 39, 16, 0, Main.jarWidth-39, Main.jarHeight-16, 0); //stand		
+			g.drawRegion(buttonImage, 0, 0, 31, 16, 0, 0, Main.screenHeight-16, 0); //hit
+			g.drawRegion(buttonImage, 31, 0, 39, 16, 0, Main.screenWidth-39, Main.screenHeight-16, 0); //stand		
 			drawPlayerButtons = false;
 		}
 		drawCoinCounter(g);
 		drawStage(g);
 		g.setColor(0xFFFFFF);
-		g.drawString(statusMessage, Main.jarWidth / 2, Main.jarHeight - 16, Graphics.HCENTER | Graphics.TOP);
-		endOfGameMenu.handleDrawing(g, Main.jarWidth / 2, Main.jarHeight / 2, gameTickCounter);
+		g.drawString(statusMessage, Main.screenWidth / 2, Main.screenHeight - 16, Graphics.HCENTER | Graphics.TOP);
+		endOfGameMenu.handleDrawing(g, Main.screenWidth / 2, Main.screenHeight / 2, gameTickCounter);
 		flushGraphics();
 	}
 

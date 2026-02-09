@@ -125,15 +125,15 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 		case TITLE_APPROACHING_STATE:
 			for(int i = 0; i < 23; i++) {
 				if(Key.states[i].pressed) {
-					titleXPos = Main.jarWidth / 2 - 176 / 2;
+					titleXPos = Main.screenWidth / 2 - 176 / 2;
 					state = MENU_STATE;					
 				}
 			}
-			if(titleXPos < Main.jarWidth / 2 - 176 / 2) {
+			if(titleXPos < Main.screenWidth / 2 - 176 / 2) {
 				titleXPos += 3;				
 			}
 			else {
-				titleXPos = Main.jarWidth / 2 - 176 / 2;
+				titleXPos = Main.screenWidth / 2 - 176 / 2;
 				state = MENU_STATE;
 			}
 			break;
@@ -146,7 +146,7 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 	
 	private void updateScreen(Graphics g) {
 		midlet.createBackground(g);
-		int x = titleTickCounter % 2 == 0 ? titleXPos : Main.jarWidth - titleXPos - 176;
+		int x = titleTickCounter % 2 == 0 ? titleXPos : Main.screenWidth - titleXPos - 176;
 		if(state == STORY_STATE) {
 			if(storyTimer < 10)
 				g.setColor(0x000000);
@@ -155,15 +155,15 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 			else
 				g.setColor(0xFFFFFF);
 			for(int i = 0; i < storyTexts.size(); i++)
-				g.drawString((String)storyTexts.elementAt(i), Main.jarWidth/2, Main.jarHeight/2 + i*16, Graphics.HCENTER | Graphics.TOP);
+				g.drawString((String)storyTexts.elementAt(i), Main.screenWidth/2, Main.screenHeight/2 + i*16, Graphics.HCENTER | Graphics.TOP);
 			
 			g.setColor(0xFFFFFF);
-			g.drawString("Skip story", 4, Main.jarHeight - 16, 0);
+			g.drawString("Skip story", 4, Main.screenHeight - 16, 0);
 		}
 		else {
 			g.drawRegion(titleImage, 0, 0, 176, 75, 0, x, 0, 0);
 		}
-		mainMenu.handleDrawing(g, Main.jarWidth/2, Main.jarHeight/2, titleTickCounter);
+		mainMenu.handleDrawing(g, Main.screenWidth/2, Main.screenHeight/2, titleTickCounter);
 		flushGraphics();
 	}
    

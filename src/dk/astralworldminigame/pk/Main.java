@@ -14,6 +14,8 @@ public class Main extends MIDlet {
 		Key.initAllKeys();
 		display = Display.getDisplay(this);
 		titleCanvas = new TitleCanvas(this);
+		screenHeight = titleCanvas.getHeight();
+		screenWidth = titleCanvas.getWidth();
 	}
 
 	public void startApp() {
@@ -38,9 +40,9 @@ public class Main extends MIDlet {
 	
 	public void createBackground(Graphics g) {
 		g.setColor(0x000000);
-		g.fillRect(0, 0, Main.jarWidth, Main.jarHeight);
+		g.fillRect(0, 0, Main.screenWidth, Main.screenHeight);
 		g.setColor(0xFFFFFF);
-		g.drawRect(-1, -1, Main.jarWidth+1, Main.jarHeight+1);
+		g.drawRect(-1, -1, Main.screenWidth+1, Main.screenHeight+1);
 	}	
 	
 	public void stopMidi() {
@@ -75,6 +77,6 @@ public class Main extends MIDlet {
 	private Canvas gameCanvas;
 	public Display display;
 	public boolean musicEnabled = true;
-	public static final int jarHeight = 220;
-	public static final int jarWidth = 176;
+	public static int screenHeight = 0;
+	public static int screenWidth = 0;
 }
