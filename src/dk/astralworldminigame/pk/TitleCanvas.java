@@ -16,6 +16,7 @@ public class TitleCanvas extends GameCanvas implements Runnable {
         setFullScreenMode(true);        
         try {
 			titleImage = Image.createImage("/title.png");
+			storyImage = Image.createImage("/story.png");
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
@@ -147,15 +148,21 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 	private void updateScreen(Graphics g) {
 		midlet.createBackground(g);
 		int x = titleTickCounter % 2 == 0 ? titleXPos : Main.screenWidth - titleXPos - 176;
-		if(state == STORY_STATE) {
-			if(storyTimer < 10)
+		if(state == STORY_STATE && storyCounter != -1) {
+			if(storyTimer < 10) {
 				g.setColor(0x000000);
-			else if(storyTimer < 20 || storyTimer > 140)
+			}
+			else if(storyTimer < 20 || storyTimer > 140) {
 				g.setColor(0x9B77F3);
-			else
+				g.drawRegion(storyImage, storyCounter*130, 0, 130, 90, 0, (Main.screenWidth - 130)/2, (Main.screenHeight-90)/2, 0);
+				g.drawRegion(storyImage, 780, 0, 130, 90, 0, (Main.screenWidth - 130)/2, (Main.screenHeight-90)/2, 0);
+			}
+			else {
+				g.drawRegion(storyImage, storyCounter*130, 0, 130, 90, 0, (Main.screenWidth - 130)/2, (Main.screenHeight-90)/2, 0);
 				g.setColor(0xFFFFFF);
+			}
 			for(int i = 0; i < storyTexts.size(); i++)
-				g.drawString((String)storyTexts.elementAt(i), Main.screenWidth/2, Main.screenHeight/2 + i*16, Graphics.HCENTER | Graphics.TOP);
+				g.drawString((String)storyTexts.elementAt(i), Main.screenWidth/2, Main.screenHeight/2 + i*16 + 50, Graphics.HCENTER | Graphics.TOP);
 			
 			g.setColor(0xFFFFFF);
 			g.drawString("Skip story", 4, Main.screenHeight - 16, 0);
@@ -187,6 +194,7 @@ public class TitleCanvas extends GameCanvas implements Runnable {
 	private int titleTickCounter = 0;
 	private int titleXPos = -176;
 	private Image titleImage;
+	private Image storyImage;
 	public boolean stopCanvas = false;
 	private int sleepTime = 30;
 }
